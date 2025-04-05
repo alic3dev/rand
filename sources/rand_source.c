@@ -3,34 +3,34 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-struct source* source = NULL;
+struct rand_source* rand_source = NULL;
 
 void rand_source_initialize(
-  struct source_options* source_options
+  struct rand_source_options* rand_source_options
 ) {
-  source = malloc(sizeof(struct source));
+  rand_source = malloc(sizeof(struct rand_source));
 
-  source->time = malloc(sizeof(struct timeval));
+  rand_source->time = malloc(sizeof(struct timeval));
   __rand_source_seed_by_time();
 
-  source->secure = source_options->secure;
+  rand_source->secure = rand_source_options->secure;
 
 
-  if (source->secure == 0) {
-    source->rand = &__rand_source_rand;
-    source->urandom = NULL;
+  if (rand_source->secure == 0) {
+    rand_source->rand = &__rand_source_rand;
+    rand_source->urandom = NULL;
   } else {
-    source->rand = &__rand_source_rand_secure;
-    source->urandom = fopen("/dev/urandom", "r");
+    rand_source->rand = &__rand_source_rand_secure;
+    rand_source->urandom = fopen("/dev/urandom", "r");
   }
 }
 
 void __rand_source_seed_by_time() {
-  gettimeofday(source->time, NULL);
+  gettimeofday(rand_source->time, NULL);
   
   srand(
-    source->time->tv_sec * 1000000 +
-    source->time->tv_usec
+    rand_source->time->tv_sec * 1000000 +
+    rand_source->time->tv_usec
   );
 }
 
@@ -46,25 +46,25 @@ unsigned int __rand_source_rand_secure() {
 
   int random_value = rand();
   int add_rand_calls = rand() % 100;
-  unsigned int source_index;
+  unsigned int rand_source_index;
 
   for (int i = 0; i < add_rand_calls; ++i) {
-    source_index = (
-      source_index == 0
+    rand_source_index = (
+      rand_source_index == 0
       ? rand() % 2 
-      : fgetc(source->urandom)
+      : fgetc(rand_source->urandom)
     );
     
-    if (source_index == 0) {
+    if (rand_source_index == 0) {
       random_value = (
         random_value + rand()
       ) % RAND_MAX;
     } else {
-      unsigned int pull = fgetc(source->urandom);
+      unsigned int pull = fgetc(rand_source->urandom);
 
       for (unsigned int c = 0; c <= pull; c++) {
         random_value += (
-          fgetc(source->urandom)
+          fgetc(rand_source->urandom)
         ) % RAND_MAX;
       }
     }
@@ -79,7 +79,7 @@ unsigned int rand_source_get_int(
 ) {
   unsigned int offset = max - min;
 
-  unsigned int random_value = source->rand();
+  unsigned int random_value = rand_source->rand();
 
   return (
     random_value % offset + min
@@ -87,12 +87,12 @@ unsigned int rand_source_get_int(
 }
 
 void rand_source_clean() {
-  free(source->time);
+  free(rand_source->time);
 
-  if (source->urandom != NULL) {
-    fclose(source->urandom);
+  if (rand_source->urandom != NULL) {
+    fclose(rand_source->urandom);
   }
 
-  free(source);
+  free(rand_source);
 }
 

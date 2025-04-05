@@ -1,7 +1,8 @@
 # Build
 objects
 *.o
-rand
+executable
+library
 
 # VIM
 *.sw*

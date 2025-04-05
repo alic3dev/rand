@@ -6,20 +6,19 @@
 #include "rand_dec.h"
 #include "rand_hex.h"
 #include "rand_numalph.h"
-
-#include "result.h"
-#include "options.h"
+#include "rand_options.h"
+#include "rand_result.h"
 
 void rand_get(
-  struct result* result,
-  struct options* options
+  struct rand_result* rand_result,
+  struct rand_options* rand_options
 ) {
   void (*rand_function)(
-    struct result*,
-    struct options*
+    struct rand_result*,
+    struct rand_options*
   );
 
-  switch (options->mode) {
+  switch (rand_options->mode) {
     case alph:
       rand_function = rand_alph_get;
       break;
@@ -36,12 +35,15 @@ void rand_get(
       fprintf(
         stderr,
         "Unknown mode: %i\n",
-        options->mode
+        rand_options->mode
       );
-      options->error = 1;
+      rand_options->error = 1;
       return;
   }
 
-  rand_function(result, options);
+  rand_function(
+    rand_result,
+    rand_options
+  );
 }
 
