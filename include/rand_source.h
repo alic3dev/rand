@@ -4,21 +4,21 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-struct source {
+struct rand_source {
   unsigned char secure;
   struct timeval* time;
   unsigned int (*rand)();
   FILE* urandom;
 };
 
-extern struct source* source;
+extern struct rand_source* rand_source;
 
-struct source_options {
+struct rand_source_options {
   unsigned char secure;
 };
 
 void rand_source_initialize(
-  struct source_options*
+  struct rand_source_options*
 );
 
 void __rand_source_seed_by_time();

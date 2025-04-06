@@ -1,8 +1,8 @@
-#include "print_usage.h"
+#include "rand_print_usage.h"
 
 #include <stdio.h>
 
-void print_usage(unsigned char to_std_err) {
+void rand_print_usage(unsigned char to_std_err) {
   FILE* stream = (
     to_std_err == 0 ? stdout : stderr
   );

@@ -2,30 +2,31 @@
 
 #include <stdlib.h>
 
+#include "rand_options.h"
+#include "rand_result.h"
 #include "rand_source.h"
 
-#include "options.h"
-#include "result.h"
-
 void rand_numalph_get(
-  struct result* result,
-  struct options* options
+  struct rand_result* rand_result,
+  struct rand_options* rand_options
 ) {
-  result->length = options->length;
-  result->data = malloc(
-    sizeof(char) * result->length
+  rand_result->length = rand_options->length;
+  rand_result->data = malloc(
+    sizeof(char) * rand_result->length
   );
 
   char random_value;
 
   for (
-    unsigned int i = 0;
-    i < result->length;
-    i++
+    unsigned int rand_result_data_index = 0;
+    rand_result_data_index < rand_result->length;
+    ++rand_result_data_index
   ) {
     random_value = rand_source_get_int(0, 62);
 
-    result->data[i] = (
+    rand_result->data[
+      rand_result_data_index
+    ] = (
       random_value + (
         random_value > 35 ? 'a' - 36 : 
         (random_value > 9 ? 'A' - 10 : '0')

@@ -1,12 +1,12 @@
 #ifndef __RAND_NUMALPH_H
 #define __RAND_NUMALPH_H
 
-#include "options.h"
-#include "result.h"
+#include "rand_options.h"
+#include "rand_result.h"
 
 void rand_numalph_get(
-  struct result*,
-  struct options*
+  struct rand_result*,
+  struct rand_options*
 );
 
 #endif
