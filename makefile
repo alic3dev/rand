@@ -35,6 +35,7 @@ $(FILE_OUTPUT_LIBRARY): directories_library $(FILES_OBJECTS_LIBRARY)
 	$(LD) $(L_FLAGS) -r $(FILES_OBJECTS_LIBRARY) -o $@
 
 $(FILE_OUTPUT_EXECUTABLE): directories_executable $(FILES_OBJECTS_LIBRARY) $(FILES_OBJECTS_EXECUTABLE)
+	objcopy --redefine-sym $(SYMBOL_ENTRY_POINT)=main
 	$(CC) $(C_FLAGS) $(FILES_OBJECTS_LIBRARY) $(FILES_OBJECTS_EXECUTABLE) -e $(SYMBOL_ENTRY_POINT) -o $@
 
 directories: directories_executable directories_library
