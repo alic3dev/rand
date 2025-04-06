@@ -2,6 +2,7 @@
 objects
 *.o
 executable
+!sources/executable
 library
 
 # VIM
