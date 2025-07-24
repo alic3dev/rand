@@ -1,22 +1,26 @@
 # rand
 
-A simple utility program for generating various types of random values.
+generation->{values:random};
 
-## Usage
+## usage
 
-```sh
-
-USAGE: rand [options] [mode] [#length]
-    Modes:
-        hex     Hexadecimal
-        dec     Decimal
-        numalph Numeric + Alphabetical
-        alph    Alphabetical
-    Options:
-        sec, --secure   Secure random generation
+```zsh
+usage: rand [options] [mode] [#length]
+    modes:
+        hex     hexadecimal
+        dec     decimal
+        numalph numeric|alphabetical
+        alph    alphabetical
+    options:
+        sec, --secure   secure_random_generation
 ```
 
-## Building
+## build
 
-`make`
+```zsh
+make
+```
 
+## copyright|copyleft
+
+> © [copyright|copyleft]->{alic3dev:[2025]}:[all_lefts_reserved|all_rights_reserved]
