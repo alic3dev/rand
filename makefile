@@ -1,83 +1,71 @@
-NAME_PROJECT=rand
+name=rand
 
-DIRECTORY_INCLUDE=include
-DIRECTORY_OBJECTS=objects
-DIRECTORY_OBJECTS_EXECUTABLE=$(DIRECTORY_OBJECTS)/executable
-DIRECTORY_OUTPUT_EXECUTABLE=executable
-DIRECTORY_OUTPUT_LIBRARY=library
-DIRECTORY_SOURCES=sources
-DIRECTORY_SOURCES_EXECUTABLE=$(DIRECTORY_SOURCES)/executable
+directory_include=include
+directory_library=library
+directory_objects=objects
+directory_objects_executable=${directory_objects}/executable
+directory_output=output
+directory_sources=sources
+directory_sources_executable=${directory_sources}/executable
 
-FILE_OBJECT_ENTRY_POINT=$(DIRECTORY_OBJECTS_EXECUTABLE)/$(NAME_PROJECT)_executable.o
-FILE_OUTPUT_EXECUTABLE=$(DIRECTORY_OUTPUT_EXECUTABLE)/$(NAME_PROJECT)
-FILE_OUTPUT_LIBRARY=$(DIRECTORY_OUTPUT_LIBRARY)/$(NAME_PROJECT).o
+file_object_entry_point=${directory_objects_executable}/${name}_executable.o
+file_output=${directory_output}/${name}
+file_library=${directory_library}/${name}.o
 
-FILES_SOURCES_EXECUTABLE=$(wildcard $(DIRECTORY_SOURCES_EXECUTABLE)/*.c)
-FILES_SOURCES_LIBRARY=$(wildcard $(DIRECTORY_SOURCES)/*.c)
+files_sources_executable=${wildcard ${directory_sources_executable}/*.c}
+files_sources_library=${wildcard ${directory_sources}/*.c}
 
-FILES_OBJECTS_EXECUTABLE=$(patsubst $(DIRECTORY_SOURCES_EXECUTABLE)/%.c, $(DIRECTORY_OBJECTS_EXECUTABLE)/%.o, $(FILES_SOURCES_EXECUTABLE))
-FILES_OBJECTS_LIBRARY=$(patsubst $(DIRECTORY_SOURCES)/%.c, $(DIRECTORY_OBJECTS)/%.o, $(FILES_SOURCES_LIBRARY))
+files_objects_executable=${patsubst ${directory_sources_executable}/%.c, ${directory_objects_executable}/%.o, ${files_sources_executable}}
+files_objects_library=${patsubst ${directory_sources}/%.c, ${directory_objects}/%.o, ${files_sources_library}}
 
-SYMBOL_ENTRY_POINT_ORIGIN=$(NAME_PROJECT)_executable
+symbol_entry_point_origin=${name}_executable
 
-ifeq ($(shell which objcopy),)
-	OBJCP=:
-	SYMBOL_ENTRY_POINT_ORIGIN:=_$(SYMBOL_ENTRY_POINT_ORIGIN)
-	SYMBOL_ENTRY_POINT=$(SYMBOL_ENTRY_POINT_ORIGIN)
+ifeq (${shell which objcopy},)
+	objcp=:
+	symbol_entry_point_origin:=_${symbol_entry_point_origin}
+	symbol_entry_point=${symbol_entry_point_origin}
 else
-	OBJCP=objcopy
-	SYMBOL_ENTRY_POINT=main
+	objcp=objcopy
+	symbol_entry_point=main
 endif
 
-CC=gcc
-C_FLAGS=-O3 -I$(DIRECTORY_INCLUDE)
+cc=gcc
+c_flags=-O3 -I${directory_include}
 
-LD=ld
-L_FLAGS=
+ld=ld
+l_flags=
 
-all: library executable
+all: library rand
 
-executable: $(FILE_OUTPUT_EXECUTABLE)
+rand: ${file_output}
 
-library: $(FILE_OUTPUT_LIBRARY)
+library: ${file_library}
 
-$(FILE_OUTPUT_LIBRARY): directories_library $(FILES_OBJECTS_LIBRARY)
-	$(LD) $(L_FLAGS) -r $(FILES_OBJECTS_LIBRARY) -o $@
+${file_library}: ${files_objects_library}
+	mkdir -p ${directory_library}
+	${ld} ${l_flags} -r ${files_objects_library} -o ${file_library}
 
-$(FILE_OUTPUT_EXECUTABLE): directories_executable $(FILES_OBJECTS_LIBRARY) $(FILES_OBJECTS_EXECUTABLE)
-	$(OBJCP) --redefine-sym $(SYMBOL_ENTRY_POINT_ORIGIN)=$(SYMBOL_ENTRY_POINT) $(FILE_OBJECT_ENTRY_POINT) $(FILE_OBJECT_ENTRY_POINT)
-	$(CC) $(C_FLAGS) $(FILES_OBJECTS_LIBRARY) $(FILES_OBJECTS_EXECUTABLE) -e $(SYMBOL_ENTRY_POINT) -o $@
+${file_output}: ${files_objects_library} ${files_objects_executable}	
+	${objcp} --redefine-sym ${symbol_entry_point_origin}=${symbol_entry_point} ${file_object_entry_point} ${file_object_entry_point}
+	mkdir -p ${directory_output}
+	${cc} ${c_flags} ${files_objects_library} ${files_objects_executable} -e ${symbol_entry_point} -o ${file_output}
 
-directories: directories_executable directories_library
+${directory_objects_executable}/%.o: ${directory_sources_executable}/%.c	
+	mkdir -p ${directory_objects_executable}
+	${cc} ${c_flags} -c $< -o $@
 
-directories_executable: directories_base
-	mkdir -p $(DIRECTORY_OBJECTS_EXECUTABLE)
-	mkdir -p $(DIRECTORY_OUTPUT_EXECUTABLE)
-	mkdir -p $(DIRECTORY_SOURCES_EXECUTABLE)
+${directory_objects}/%.o: ${directory_sources}/%.c
+	mkdir -p ${directory_objects}
+	${cc} ${c_flags} -c $< -o $@
 
-directories_library: directories_base
-	mkdir -p $(DIRECTORY_OUTPUT_LIBRARY)
+clean: clean_library clean_output clean_objects
 
-directories_base:
-	mkdir -p $(DIRECTORY_INCLUDE)
-	mkdir -p $(DIRECTORY_OBJECTS)
-	mkdir -p $(DIRECTORY_SOURCES)
+clean_objects:
+	-rm -r ${directory_objects} 2> /dev/null
 
-$(DIRECTORY_OBJECTS)/%.o: $(DIRECTORY_SOURCES)/%.c
-	$(CC) $(C_FLAGS) -c $< -o $@
+clean_output:
+	-rm -r ${directory_output} 2> /dev/null
 
-$(DIRECTORY_OBJECTS_EXECUTABLE)/%.o: $(DIRECTORY_SOURCES_EXECUTABLE)/%.c
-	$(CC) $(C_FLAGS) -c $< -o $@
-
-clean: clean_library clean_executable
-
-clean_executable: clean_base
-	-rm $(FILE_OUTPUT_EXECUTABLE) 2> /dev/null
-	-rm $(DIRECTORY_OBJECTS_EXECUTABLE)/*.o 2> /dev/null
-
-clean_library: clean_base
-	-rm $(FILE_OUTPUT_LIBRARY) 2> /dev/null
-
-clean_base:
-	-rm $(DIRECTORY_OBJECTS)/*.o 2> /dev/null
+clean_library:
+	-rm -r ${directory_library} 2> /dev/null
 
