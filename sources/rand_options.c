@@ -171,7 +171,7 @@ void rand_options_parse(
         ) {
           fprintf(
             stderr,
-            "length:invalid->{%i}\n",
+            "length:invalid->{%lu}\n",
             rand_options->length
           );
           rand_options->error = 1;
