@@ -1,7 +1,9 @@
-#ifndef __RAND_EXECUTABLE_H
-#define __RAND_EXECUTABLE_H
+#ifndef __rand_executable_h
+#define __rand_executable_h
 
-int rand_executable(int, char**);
+int rand_executable(
+  int,
+  char**
+);
 
 #endif
-

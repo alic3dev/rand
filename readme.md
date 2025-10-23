@@ -5,20 +5,33 @@ generation->{values:random};
 ## usage
 
 ```zsh
-usage: rand [options] [mode] [#length]
-    modes:
-        hex     hexadecimal
-        dec     decimal
-        numalph numeric|alphabetical
-        alph    alphabetical
-    options:
-        sec, --secure   secure_random_generation
+usage: rand [?options] [?mode] [?#length]
+  modes:
+    -x, --hexadecimal, hexadecimal                    | hexadecimal
+    -d --decimal, decimal                             | decimal
+    -n, --numeric_alphabetical, numeric_alphabetical  | numeric & alphabetical
+    -a, --alphabetical, alphabetical                  | alphabetical
+  options:
+    -h, --help, help                                  | print help information
+    -s, --secure, secure                              | secure random generation
 ```
+
+## development
+
+### dependencies
+
+- [`clic3`](https://github.com/alic3dev/clic3)
 
 ## build
 
 ```zsh
 make
+```
+
+## clean
+
+```zsh
+make clean
 ```
 
 ## copyright|copyleft

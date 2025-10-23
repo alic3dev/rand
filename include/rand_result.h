@@ -1,12 +1,18 @@
-#ifndef __RAND_RESULT_H
-#define __RAND_RESULT_H
+#ifndef __rand_result_h
+#define __rand_result_h
 
 struct rand_result {
-  char* data;
-  unsigned int length;
+  unsigned char* bytes;
+  unsigned long int length;
 };
 
-void rand_result_clean(struct rand_result*);
+void rand_result_initialize(
+  struct rand_result*,
+  unsigned long int
+);
+
+void rand_result_clean(
+  struct rand_result*
+);
 
 #endif
-

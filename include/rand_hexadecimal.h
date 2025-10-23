@@ -1,0 +1,17 @@
+#ifndef __rand_hexadecimal_h
+#define __rand_hexadecimal_h
+
+#include <rand_options.h>
+#include <rand_result.h>
+#include <rand_source.h>
+
+unsigned char rand_hexadecimal_get(
+  struct rand_source*,
+  struct rand_result*
+);
+
+unsigned char rand_hexadecimal_transform(
+  unsigned char
+);
+
+#endif

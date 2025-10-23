@@ -1,49 +1,48 @@
-#include "rand_functions.h"
+#include <rand_functions.h>
+
+#include <rand_alphabetical.h>
+#include <rand_decimal.h>
+#include <rand_hexadecimal.h>
+#include <rand_numeric_alphabetical.h>
+#include <rand_options.h>
+#include <rand_result.h>
 
 #include <stdio.h>
 
-#include "rand_alph.h"
-#include "rand_dec.h"
-#include "rand_hex.h"
-#include "rand_numalph.h"
-#include "rand_options.h"
-#include "rand_result.h"
-
-void rand_get(
+unsigned char rand_get(
+  struct rand_source* rand_source,
   struct rand_result* rand_result,
   struct rand_options* rand_options
 ) {
-  void (*rand_function)(
-    struct rand_result*,
-    struct rand_options*
-  );
+  rand_get_function rand_get_function;
 
   switch (rand_options->mode) {
-    case alph:
-      rand_function = rand_alph_get;
+    case rand_mode_alphabetical:
+      rand_get_function = rand_alphabetical_get;
       break;
-    case dec:
-      rand_function = rand_dec_get;
+    case rand_mode_decimal:
+      rand_get_function = rand_decimal_get;
       break;
-    case hex:
-      rand_function = rand_hex_get;
+    case rand_mode_hexadecimal:
+      rand_get_function = rand_hexadecimal_get;
       break;
-    case numalph:
-      rand_function = rand_numalph_get;
+    case rand_mode_numeric_alphabetical:
+      rand_get_function = rand_numeric_alphabetical_get;
       break;
     default:
       fprintf(
         stderr,
-        "Unknown mode: %i\n",
+        "mode:unknown->{%i}\n",
         rand_options->mode
       );
+
       rand_options->error = 1;
-      return;
+
+      return rand_options->error;
   }
 
-  rand_function(
-    rand_result,
-    rand_options
+  return rand_get_function(
+    rand_source,
+    rand_result
   );
 }
-

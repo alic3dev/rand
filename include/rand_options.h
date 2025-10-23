@@ -1,19 +1,15 @@
-#ifndef __RAND_OPTIONS_H
-#define __RAND_OPTIONS_H
+#ifndef __rand_options_h
+#define __rand_options_h
 
-enum rand_mode {
-  hex,
-  dec,
-  alph,
-  numalph
-};
+#include <rand_mode.h>
+#include <rand_source_type.h>
 
 struct rand_options {
-  unsigned int length;
   enum rand_mode mode;
-  unsigned char secure;
+  enum rand_source_type type_source;
+  unsigned long int length;
   unsigned char help;
-  int error;
+  unsigned char error;
 };
 
 struct rand_options_parsing_state {
@@ -33,4 +29,3 @@ void rand_options_mode_set(
 );
 
 #endif
-
