@@ -28,23 +28,21 @@ void rand_source_initialize(
         "rb"
       );
 
-      (
+      struct rand_source_divisive_data* rand_source_divisive_data = (
         (struct rand_source_divisive_data*) rand_source->data
-      )->multiplier = (
-        fgetc(urandom) + fgetc(urandom)
       );
 
-      (
-        (struct rand_source_divisive_data*) rand_source->data
-      )->seed = (
-        fgetc(urandom) * fgetc(urandom)
-      );
+      rand_source_divisive_data->multiplier = (
+        (fgetc(urandom) + fgetc(urandom)) % 0xfffd
+      ) + 2;
 
-      (
-        (struct rand_source_divisive_data*) rand_source->data
-      )->value = (
-        (struct rand_source_divisive_data*) rand_source->data
-      )->seed;
+      rand_source_divisive_data->seed = (
+        (fgetc(urandom) * fgetc(urandom)) % 0xfffd
+      ) + 2;
+
+      rand_source_divisive_data->value = (
+        rand_source_divisive_data->seed
+      );
 
       fclose(urandom);
       break;
