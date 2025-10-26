@@ -19,7 +19,7 @@ void rand_print_usage(unsigned char to_std_err) {
     "    -a, --alphabetical, alphabetical                  | alphabetical\n"
     "  parameters:\n"
     "    -h, --help, help                                  | print help information\n"
-    "    -d, --divisive, divisive                          | divisive random generation\n"
+    "    -v, --divisive, divisive                          | divisive random generation\n"
     "    -s, --secure, secure                              | secure random generation\n"
   );
 }
