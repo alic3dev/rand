@@ -4,7 +4,7 @@
 #include <rand_decimal.h>
 #include <rand_hexadecimal.h>
 #include <rand_numeric_alphabetical.h>
-#include <rand_options.h>
+#include <rand_parameters.h>
 #include <rand_result.h>
 
 #include <stdio.h>
@@ -12,11 +12,11 @@
 unsigned char rand_get(
   struct rand_source* rand_source,
   struct rand_result* rand_result,
-  struct rand_options* rand_options
+  struct rand_parameters* rand_parameters
 ) {
   rand_get_function rand_get_function;
 
-  switch (rand_options->mode) {
+  switch (rand_parameters->mode) {
     case rand_mode_alphabetical:
       rand_get_function = rand_alphabetical_get;
       break;
@@ -33,12 +33,12 @@ unsigned char rand_get(
       fprintf(
         stderr,
         "mode:unknown->{%i}\n",
-        rand_options->mode
+        rand_parameters->mode
       );
 
-      rand_options->error = 1;
+      rand_parameters->error = 1;
 
-      return rand_options->error;
+      return rand_parameters->error;
   }
 
   return rand_get_function(

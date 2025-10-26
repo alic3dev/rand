@@ -11,14 +11,15 @@ void rand_print_usage(unsigned char to_std_err) {
 
   fprintf(
     stream,
-    "usage: rand [?options] [?mode] [?#length]\n"
+    "usage: rand [?parameters] [?mode] [?#length]\n"
     "  modes:\n"
     "    -x, --hexadecimal, hexadecimal                    | hexadecimal\n"
     "    -d --decimal, decimal                             | decimal\n"
     "    -n, --numeric_alphabetical, numeric_alphabetical  | numeric & alphabetical\n"
     "    -a, --alphabetical, alphabetical                  | alphabetical\n"
-    "  options:\n"
+    "  parameters:\n"
     "    -h, --help, help                                  | print help information\n"
+    "    -d, --divisive, divisive                          | divisive random generation\n"
     "    -s, --secure, secure                              | secure random generation\n"
   );
 }

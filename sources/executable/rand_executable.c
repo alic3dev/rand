@@ -1,7 +1,7 @@
 #include <rand_executable.h>
 
 #include <rand_functions.h>
-#include <rand_options.h>
+#include <rand_parameters.h>
 #include <rand_print_usage.h>
 #include <rand_result.h>
 #include <rand_source.h>
@@ -13,51 +13,51 @@ int main(
   int length_parameters,
   char** parameters
 ) {
-  struct rand_options rand_options;
+  struct rand_parameters rand_parameters;
 
-  rand_options_parse(
-    &rand_options,
+  rand_parameters_parse(
+    &rand_parameters,
     length_parameters,
     parameters
   );
 
   if (
-    rand_options.error != 0
+    rand_parameters.error != 0
   ) {
     rand_print_usage(1);
 
-    return rand_options.error;
+    return rand_parameters.error;
   }
 
   if (
-    rand_options.help != 0
+    rand_parameters.help != 0
   ) {
     rand_print_usage(0);
 
     return 0;
   }
 
-  struct rand_source_options rand_source_options;
-  rand_source_options.type_source = rand_options.type_source;
+  struct rand_source_parameters rand_source_parameters;
+  rand_source_parameters.type_source = rand_parameters.type_source;
 
   struct rand_source rand_source;
 
   rand_source_initialize(
     &rand_source,
-    &rand_source_options
+    &rand_source_parameters
   );
 
   struct rand_result rand_result;
 
   rand_result_initialize(
     &rand_result,
-    rand_options.length
+    rand_parameters.length
   );
 
   unsigned char status_rand_get = rand_get(
     &rand_source,
     &rand_result,
-    &rand_options
+    &rand_parameters
   );
 
   if (

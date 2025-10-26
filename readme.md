@@ -5,14 +5,15 @@ generation->{values:random};
 ## usage
 
 ```zsh
-usage: rand [?options] [?mode] [?#length]
+usage: rand [?parameters] [?mode] [?#length]
   modes:
     -x, --hexadecimal, hexadecimal                    | hexadecimal
     -d --decimal, decimal                             | decimal
     -n, --numeric_alphabetical, numeric_alphabetical  | numeric & alphabetical
     -a, --alphabetical, alphabetical                  | alphabetical
-  options:
+  parameters:
     -h, --help, help                                  | print help information
+    -p, --divisive, divisive                          | divisive random generation
     -s, --secure, secure                              | secure random generation
 ```
 
