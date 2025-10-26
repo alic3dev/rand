@@ -1,6 +1,6 @@
 #include <rand_source.h>
 
-#include <rand_options.h>
+#include <rand_parameters.h>
 #include <rand_result.h>
 
 #include <stdlib.h>
@@ -8,22 +8,49 @@
 
 void rand_source_initialize(
   struct rand_source* rand_source,
-  struct rand_source_options* rand_source_options
+  struct rand_source_parameters* rand_source_parameters
 ) {
   rand_source_seed_by_time(
     rand_source
   );
 
-  rand_source->type_source = rand_source_options->type_source;
+  rand_source->type_source = rand_source_parameters->type_source;
 
   switch (rand_source->type_source) {
-    case rand_source_type_pseudo:
-      rand_source->rand = rand_source_rand;
-      rand_source->urandom = (void*)0;
+    case rand_source_type_divisive:
+      rand_source->rand = rand_source_divisive;
+      rand_source->data = malloc(
+        sizeof(struct rand_source_divisive_data)
+      );
+
+      void* urandom = fopen(
+        "/dev/urandom",
+        "rb"
+      );
+
+      (
+        (struct rand_source_divisive_data*) rand_source->data
+      )->multiplier = (
+        fgetc(urandom) + fgetc(urandom)
+      );
+
+      (
+        (struct rand_source_divisive_data*) rand_source->data
+      )->seed = (
+        fgetc(urandom) * fgetc(urandom)
+      );
+
+      (
+        (struct rand_source_divisive_data*) rand_source->data
+      )->value = (
+        (struct rand_source_divisive_data*) rand_source->data
+      )->seed;
+
+      fclose(urandom);
       break;
     case rand_source_type_secure:
       rand_source->rand = rand_source_rand_secure;
-      rand_source->urandom = fopen(
+      rand_source->data = fopen(
         "/dev/urandom",
         "rb"
       );
@@ -31,7 +58,7 @@ void rand_source_initialize(
     case rand_source_type_default:
     default:
       rand_source->rand = rand_source_rand;
-      rand_source->urandom = (void*)0;
+      rand_source->data = (void*)0;
       break;
   }
 }
@@ -39,15 +66,81 @@ void rand_source_initialize(
 void rand_source_seed_by_time(
   struct rand_source* rand_source
 ) {
+  struct timeval time;
+
   gettimeofday(
-    &rand_source->time,
+    &time,
     (void*)0
   );
   
   srand(
-    rand_source->time.tv_sec * 1000000 +
-    rand_source->time.tv_usec
+    time.tv_sec * 1000000 +
+    time.tv_usec
   );
+}
+
+unsigned char rand_source_divisive(
+  struct rand_source* rand_source,
+  struct rand_result* rand_result,
+  rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
+) {
+  struct rand_source_divisive_data* rand_source_divisive_data = (
+    (struct rand_source_divisive_data*) rand_source->data
+  );
+
+  for (
+    unsigned long int index_byte = 0;
+    index_byte < rand_result->length;
+    ++index_byte
+  ) {
+    do {
+      rand_source_divisive_data->value = (
+        rand_source_divisive_data->value / 2.0f
+      );
+    } while (
+      rand_source_divisive_data->value > 1.0f
+    );
+
+    float value = (
+      (rand_source_divisive_data->value - 0.5f) /
+      0.5f
+    );
+
+    unsigned char index_generation_distribution = (
+      value * 100.0f
+    );
+
+    rand_source_divisive_data->generation_distributions[
+      index_generation_distribution
+    ] = (
+      (rand_source_divisive_data->generation_distributions[
+        index_generation_distribution
+      ] + 1) %
+      (index_generation_distribution + 3)
+    );
+
+    if (
+      (index_generation_distribution + 1) % (
+        rand_source_divisive_data->generation_distributions[
+          index_generation_distribution
+        ]
+      ) == 0
+    ) {
+      value = 1.0f - value;
+    }
+
+    rand_result->bytes[
+      index_byte
+    ] = rand_source_get_bytes_transform_function(
+      value * 256
+    );
+
+    rand_source_divisive_data->value = (
+      rand_source_divisive_data->value * rand_source_divisive_data->multiplier
+    );
+  }
+
+  return 0;
 }
 
 unsigned char rand_source_rand(
@@ -109,7 +202,7 @@ unsigned char rand_source_rand_secure(
       rand_source_index = (
         rand_source_index == 0
         ? rand() % 8
-        : fgetc(rand_source->urandom) % 8
+        : fgetc(rand_source->data) % 8
       );
       
       if (
@@ -120,7 +213,7 @@ unsigned char rand_source_rand_secure(
         ) % RAND_MAX;
       } else {
         unsigned int length_characters = fgetc(
-          rand_source->urandom
+          rand_source->data
         );
 
         for (
@@ -131,7 +224,7 @@ unsigned char rand_source_rand_secure(
           random_value = (
             random_value + (
               fgetc(
-                rand_source->urandom
+                rand_source->data
               )
             ) % RAND_MAX
           );
@@ -165,8 +258,10 @@ void rand_source_clean(
   struct rand_source* rand_source
 ) {
   if (
-    rand_source->urandom != (void*)0
+    rand_source->type_source == rand_source_type_secure
   ) {
-    fclose(rand_source->urandom);
+    fclose(
+      rand_source->data
+    );
   }
 }

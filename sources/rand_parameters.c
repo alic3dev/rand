@@ -1,4 +1,4 @@
-#include <rand_options.h>
+#include <rand_parameters.h>
 
 #include <rand_mode.h>
 #include <rand_source.h>
@@ -7,19 +7,19 @@
 
 #include <stdio.h>
 
-void rand_options_parse(
-  struct rand_options* rand_options,
+void rand_parameters_parse(
+  struct rand_parameters* rand_parameters,
   int parameters_length,
   char** parameters
 ) {
-  rand_options->length = 10;
-  rand_options->mode = rand_mode_hexadecimal;
-  rand_options->error = 0;
-  rand_options->help = 0;
-  rand_options->type_source = rand_source_type_default;
+  rand_parameters->length = 10;
+  rand_parameters->mode = rand_mode_hexadecimal;
+  rand_parameters->error = 0;
+  rand_parameters->help = 0;
+  rand_parameters->type_source = rand_source_type_default;
 
-  struct rand_options_parsing_state rand_options_parsing_state;
-  rand_options_parsing_state.mode_set = 0;
+  struct rand_parameters_parsing_state rand_parameters_parsing_state;
+  rand_parameters_parsing_state.mode_set = 0;
 
   for (
     int index_parameter = 1; 
@@ -37,8 +37,31 @@ void rand_options_parse(
         "help"
       ) != -1
     ) {
-      rand_options->help = 1;
+      rand_parameters->help = 1;
       return;
+    } else if (
+      clic3_char_arrays_within(
+        parameters[
+          index_parameter
+        ],
+        3,
+        "-v",
+        "--divisive",
+        "divisive"
+      ) != -1
+    ) {
+      if (
+        rand_parameters->type_source == rand_source_type_default
+      ) {
+        rand_parameters->type_source = rand_source_type_divisive;
+      } else {
+        fprintf(
+          stderr,
+          "tried_to_set_source_more_than_once\n"
+        );
+
+        rand_parameters->error = 1;
+      }
     } else if (
       clic3_char_arrays_within(
         parameters[
@@ -51,15 +74,16 @@ void rand_options_parse(
       ) != -1
     ) {
       if (
-        rand_options->type_source == rand_source_type_secure
+        rand_parameters->type_source == rand_source_type_default
       ) {
+        rand_parameters->type_source = rand_source_type_secure;
+      } else {
         fprintf(
           stderr,
-          "tried_to_set_secure_more_than_once\n"
+          "tried_to_set_source_more_than_once\n"
         );
-        rand_options->error = 1;
-      } else {
-        rand_options->type_source = rand_source_type_secure;
+
+        rand_parameters->error = 1;
       }
     } else if (
       clic3_char_arrays_within(
@@ -72,10 +96,10 @@ void rand_options_parse(
         "decimal"
       ) != -1
     ) {
-      rand_options_mode_set(
+      rand_parameters_mode_set(
         rand_mode_decimal,
-        rand_options,
-        &rand_options_parsing_state
+        rand_parameters,
+        &rand_parameters_parsing_state
       );
     } else if (
       clic3_char_arrays_within(
@@ -88,10 +112,10 @@ void rand_options_parse(
         "hexadecimal"
       ) != -1
     ) {
-      rand_options_mode_set(
+      rand_parameters_mode_set(
         rand_mode_hexadecimal,
-        rand_options,
-        &rand_options_parsing_state
+        rand_parameters,
+        &rand_parameters_parsing_state
       );
     } else if (
       clic3_char_arrays_within(
@@ -104,10 +128,10 @@ void rand_options_parse(
         "alphabetical"
       ) != -1
     ) {
-      rand_options_mode_set(
+      rand_parameters_mode_set(
         rand_mode_alphabetical,
-        rand_options,
-        &rand_options_parsing_state
+        rand_parameters,
+        &rand_parameters_parsing_state
       );
     } else if (
       clic3_char_arrays_within(
@@ -120,13 +144,13 @@ void rand_options_parse(
         "numeric_alphabetical"
       ) != -1
     ) {
-      rand_options_mode_set(
+      rand_parameters_mode_set(
         rand_mode_numeric_alphabetical,
-        rand_options,
-        &rand_options_parsing_state
+        rand_parameters,
+        &rand_parameters_parsing_state
       );
     } else {
-      size_t option_length = clic3_char_array_length(
+      unsigned int parameter_length = clic3_char_array_length(
         parameters[
           index_parameter
         ]
@@ -134,8 +158,8 @@ void rand_options_parse(
       unsigned char is_number = 1;
 
       for (
-        size_t parameter_character_index = 0;
-        parameter_character_index < option_length;
+        unsigned int parameter_character_index = 0;
+        parameter_character_index < parameter_length;
         ++parameter_character_index
       ) {
         if (
@@ -162,53 +186,55 @@ void rand_options_parse(
           parameters[
             index_parameter
           ],
-          &rand_options->length
+          &rand_parameters->length
         );
 
         if (
           status_char_array_to_unsigned_long_int != 0 ||
-          rand_options->length <= 0
+          rand_parameters->length <= 0
         ) {
           fprintf(
             stderr,
             "length:invalid->{%lu}\n",
-            rand_options->length
+            rand_parameters->length
           );
-          rand_options->error = 1;
+          rand_parameters->error = 1;
         }
       } else {
         fprintf(
           stderr,
-          "option:unknown->{%s}\n",
+          "parameter:unknown->{%s}\n",
           parameters[index_parameter]
         );
-        rand_options->error = 1;
+        rand_parameters->error = 1;
       }
     }
 
     if (
-      rand_options->error != 0
+      rand_parameters->error != 0
     ) {
       return;
     }
   }
 }
 
-void rand_options_mode_set(
+void rand_parameters_mode_set(
   enum rand_mode rand_mode,
-  struct rand_options* rand_options,
-  struct rand_options_parsing_state* rand_options_parsing_state
+  struct rand_parameters* rand_parameters,
+  struct rand_parameters_parsing_state* rand_parameters_parsing_state
 ) {
-  if (rand_options_parsing_state->mode_set != 0) {
+  if (
+    rand_parameters_parsing_state->mode_set != 0
+  ) {
     fprintf(
       stderr,
       "tried_setting_two_modes\n"
     );
-    rand_options->error = 1;
+    rand_parameters->error = 1;
 
     return;
   }
 
-  rand_options->mode = rand_mode;
-  rand_options_parsing_state->mode_set = 1;
+  rand_parameters->mode = rand_mode;
+  rand_parameters_parsing_state->mode_set = 1;
 }

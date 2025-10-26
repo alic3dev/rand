@@ -1,7 +1,7 @@
 #ifndef __rand_decimal_h
 #define __rand_decimal_h
 
-#include <rand_options.h>
+#include <rand_parameters.h>
 #include <rand_result.h>
 #include <rand_source.h>
 
