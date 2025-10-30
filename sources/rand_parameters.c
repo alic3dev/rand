@@ -91,6 +91,22 @@ void rand_parameters_parse(
           index_parameter
         ],
         3,
+        "-b",
+        "--bytes",
+        "bytes"
+      ) != -1
+    ) {
+      rand_parameters_mode_set(
+        rand_mode_bytes,
+        rand_parameters,
+        &rand_parameters_parsing_state
+      );
+    } else if (
+      clic3_char_arrays_within(
+        parameters[
+          index_parameter
+        ],
+        3,
         "-d",
         "--decimal",
         "decimal"

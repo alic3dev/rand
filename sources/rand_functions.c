@@ -1,6 +1,7 @@
 #include <rand_functions.h>
 
 #include <rand_alphabetical.h>
+#include <rand_bytes.h>
 #include <rand_decimal.h>
 #include <rand_hexadecimal.h>
 #include <rand_numeric_alphabetical.h>
@@ -19,6 +20,9 @@ unsigned char rand_get(
   switch (rand_parameters->mode) {
     case rand_mode_alphabetical:
       rand_get_function = rand_alphabetical_get;
+      break;
+    case rand_mode_bytes:
+      rand_get_function = rand_bytes_get;
       break;
     case rand_mode_decimal:
       rand_get_function = rand_decimal_get;
