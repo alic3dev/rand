@@ -13,6 +13,7 @@ void rand_print_usage(unsigned char to_std_err) {
     stream,
     "usage: rand [?parameters] [?mode] [?#length]\n"
     "  modes:\n"
+    "    -b, --bytes, bytes                                | bytes\n"
     "    -x, --hexadecimal, hexadecimal                    | hexadecimal\n"
     "    -d --decimal, decimal                             | decimal\n"
     "    -n, --numeric_alphabetical, numeric_alphabetical  | numeric & alphabetical\n"
