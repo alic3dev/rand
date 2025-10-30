@@ -7,6 +7,7 @@ generation->{values:random};
 ```zsh
 usage: rand [?parameters] [?mode] [?#length]
   modes:
+    -b, --bytes, bytes                                | bytes
     -x, --hexadecimal, hexadecimal                    | hexadecimal
     -d --decimal, decimal                             | decimal
     -n, --numeric_alphabetical, numeric_alphabetical  | numeric & alphabetical
