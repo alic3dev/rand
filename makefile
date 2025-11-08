@@ -85,6 +85,9 @@ ${name}: ${file_output}
 
 library: ${file_library_dylib} ${file_library_dynamic} ${file_library_object} ${file_library_static}
 
+run: ${file_output}
+	cd ${directory_output} && ./${shell basename ${file_output}}
+
 ${file_library_dylib}: ${files_objects_library}
 	mkdir -p ${directory_library}
 	${cc} -dynamiclib -install_name ${name_library_dylib_major} -current_version ${version} -compatibility_version ${version_major_minor} ${files_dylibs} ${files_objects_library} -o ${file_library_dylib_major}
