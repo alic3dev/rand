@@ -7,16 +7,38 @@
 
 #include <stdio.h>
 
+void rand_parameters_initialize(
+  struct rand_parameters* rand_parameters,
+  unsigned long int length,
+  enum rand_mode rand_mode,
+  enum rand_source_type rand_source_type
+) {
+  rand_parameters->error = 0;
+  rand_parameters->help = 0;
+  rand_parameters->length = length;
+  rand_parameters->mode = rand_mode;
+  rand_parameters->type_source = rand_source_type;
+}
+
+void rand_parameters_initialize_default(
+  struct rand_parameters* rand_parameters
+) {
+  rand_parameters_initialize(
+    rand_parameters,
+    10,
+    rand_mode_hexadecimal,
+    rand_source_type_default
+  );
+}
+
 void rand_parameters_parse(
   struct rand_parameters* rand_parameters,
   int parameters_length,
   char** parameters
 ) {
-  rand_parameters->length = 10;
-  rand_parameters->mode = rand_mode_hexadecimal;
-  rand_parameters->error = 0;
-  rand_parameters->help = 0;
-  rand_parameters->type_source = rand_source_type_default;
+  rand_parameters_initialize_default(
+    rand_parameters
+  );
 
   struct rand_parameters_parsing_state rand_parameters_parsing_state;
   rand_parameters_parsing_state.mode_set = 0;
