@@ -16,6 +16,18 @@ struct rand_parameters_parsing_state {
   unsigned char mode_set;
 };
 
+
+void rand_parameters_initialize(
+  struct rand_parameters*,
+  unsigned long int,
+  enum rand_mode,
+  enum rand_source_type
+);
+
+void rand_parameters_initialize_default(
+  struct rand_parameters*
+);
+
 void rand_parameters_parse(
   struct rand_parameters*,
   int,
