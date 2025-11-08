@@ -1,5 +1,6 @@
 #include <rand_executable.h>
 
+#include <rand_clean.h>
 #include <rand_functions.h>
 #include <rand_parameters.h>
 #include <rand_print_usage.h>
@@ -90,11 +91,8 @@ int main(
 
   printf("\n");
 
-  rand_result_clean(
-    &rand_result
-  );
-
-  rand_source_clean(
+  rand_clean(
+    &rand_result,
     &rand_source
   );
 
