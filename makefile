@@ -14,17 +14,6 @@ directory_library_debug=${directory_library}_debug
 directory_objects=${directory_objects_base}/release
 directory_objects_executable=${directory_objects_executable_base}/release
 
-ifeq (${debug}, 1)
-	name:=${name}_debug
-	directory_objects=${directory_objects_base}/debug
-	directory_objects_executable=${directory_objects_executable_base}/debug
-	directory_library:=${directory_library_debug}
-endif
-
-directory_include=include
-directory_output=output
-directory_sources=sources
-directory_sources_executable=${directory_sources}/executable
 
 ifndef directory_clic3
 	directory_clic3=../clic3
@@ -35,6 +24,20 @@ directory_clic3_library=${directory_clic3}/library
 file_output=${directory_output}/${name}
 
 file_clic3_library=${directory_clic3_library}/clic3.0.dylib
+
+ifeq (${debug}, 1)
+	name:=${name}_debug
+	directory_objects=${directory_objects_base}/debug
+	directory_objects_executable=${directory_objects_executable_base}/debug
+	directory_library:=${directory_library_debug}
+	directory_clic3_library=${directory_clic3}/library_debug
+	file_clic3_library=${directory_clic3_library}/clic3_debug.0.dylib
+endif
+
+directory_include=include
+directory_output=output
+directory_sources=sources
+directory_sources_executable=${directory_sources}/executable
 
 files_sources_executable=${wildcard ${directory_sources_executable}/*.c}
 files_sources_library=${wildcard ${directory_sources}/*.c}
