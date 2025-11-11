@@ -18,4 +18,8 @@ void rand_result_clean(
   struct rand_result* rand_result
 ) {
   free(rand_result->bytes);
+
+  rand_result->bytes = (
+    (void*)0
+  );
 }
