@@ -134,7 +134,7 @@ ${directory_objects}/%.o: ${directory_sources}/%.c
 	mkdir -p ${directory_objects}
 	${cc} ${c_flags} -c $< -o $@
 
-clean: clean_library clean_objects clean_output
+clean: clean_library clean_library_debug clean_objects clean_output
 
 clean_objects:
 	-rm -r ${directory_objects} 2> /dev/null
@@ -144,3 +144,6 @@ clean_output:
 
 clean_library:
 	-rm -r ${directory_library} 2> /dev/null
+
+clean_library_debug:
+	-rm -r ${directory_library_debug} 2> /dev/null
