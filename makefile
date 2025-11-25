@@ -1,40 +1,71 @@
 name=rand
 
+ifndef target_device
+target_device=mac
+endif
+
+ifeq (${target_os},ios)
+target_device=iphone
+endif
+
+ifeq (${target_device},mac)
+target_os=macos
+endif
+
+ifeq (${target_device},iphone)
+target_os=ios
+name:=${name}_${target_os}
+endif
+
 version_major=0
 version_minor=1
 version_patch=0
 version_major_minor=${version_major}.${version_minor}
 version=${version_major}.${version_minor}.${version_patch}
 
+version_target_clic3=0
+
+directory_library_base=library
 directory_objects_base=objects
 directory_objects_executable_base=objects/executable
-directory_library=library
-directory_library_debug=${directory_library}_debug
 
-directory_objects=${directory_objects_base}/release
+directory_library=${directory_library_base}/${target_os}/release
+directory_library_debug=${directory_library_base}/${target_os}/debug
+directory_objects=${directory_objects_base}/${target_os}/release
 directory_objects_executable=${directory_objects_executable_base}/release
-
 
 ifndef directory_clic3
 	directory_clic3=../clic3
 endif
+directory_clic3_library=${directory_clic3}/library/${target_os}/release
 directory_clic3_include=${directory_clic3}/include
-directory_clic3_library=${directory_clic3}/library
 
 file_output=${directory_output}/${name}
 
-file_clic3_library=${directory_clic3_library}/clic3.0.dylib
+ifeq (${target_os},macos)
+file_clic3_library=${directory_clic3_library}/clic3.${version_target_clic3}.dylib
+else
+file_clic3_library=${directory_clic3_library}/clic3_${target_os}.${version_target_clic3}.dylib
+endif
 
 ifeq (${debug}, 1)
 	name:=${name}_debug
-	directory_objects=${directory_objects_base}/debug
-	directory_objects_executable=${directory_objects_executable_base}/debug
+	
 	directory_library:=${directory_library_debug}
-	directory_clic3_library=${directory_clic3}/library_debug
-	file_clic3_library=${directory_clic3_library}/clic3_debug.0.dylib
+	directory_objects=${directory_objects_base}/${target_os}/debug
+	directory_objects_executable=${directory_objects_executable_base}/debug
+
+	directory_clic3_library=${directory_clic3}/library/${target_os}/debug
+
+ifeq (${target_os},macos)
+	file_clic3_library=${directory_clic3_library}/clic3_debug.${version_target_clic3}.dylib
+else
+	file_clic3_library=${directory_clic3_library}/clic3_${target_os}_debug.${version_target_clic3}.dylib
+endif
 endif
 
 directory_include=include
+directory_install=/System/Volumes/Preboot/Cryptexes
 directory_output=output
 directory_sources=sources
 directory_sources_executable=${directory_sources}/executable
@@ -47,11 +78,30 @@ files_objects_library=${patsubst ${directory_sources}/%.c, ${directory_objects}/
 
 files_dylibs=${file_clic3_library}
 
+ifndef target_device_version
+	target_device_version=26.1
+endif
+
+ifeq (${target_os},macos)
+target_platform=arm64-apple-macos${target_device_version}
+
+directory_sdk=${shell xcrun --sdk macosx${target_device_version} --show-sdk-path}
+endif
+
+ifneq (${target_os},macos)
+files_objects_library:=${patsubst ${directory_objects}/%.o,${directory_objects}/%_${target_os}.o,${files_objects_library}}
+
+target_platform=arm64-apple-ios${target_iphoneos_version}
+
+directory_sdk=${shell xcrun --sdk iphoneos${target_device_version} --show-sdk-path}
+endif
+
 cc=gcc
-c_flags=-I${directory_include} -I${directory_clic3_include}
+c_flags_platform=-target ${target_platform} -isysroot ${directory_sdk}
+c_flags=-I${directory_include} -I${directory_clic3_include} ${c_flags_platform}
 
 ifeq (${debug}, 1)
-	c_flags:=${c_flags} -O0 -g -v -da -Q
+	c_flags:=${c_flags} -O0 -g -v -da
 else
 	c_flags:=${c_flags} -O3
 endif
@@ -71,6 +121,9 @@ name_library_dylib_major=${name}.${version_major}.dylib
 file_library_dylib=${directory_library}/${name}.dylib
 file_library_dylib_major=${directory_library}/${name_library_dylib_major}
 
+file_install=${directory_install}/OS${name}.dylib
+file_install_major=${directory_install}/OS${name_library_dylib_major}
+
 name_library_dynamic_major=${name}.${version_major}.so
 file_library_dynamic=${directory_library}/${name}.so
 file_library_dynamic_major=${directory_library}/${name_library_dynamic_major}
@@ -88,12 +141,17 @@ ${name}: ${file_output}
 
 library: ${file_library_dylib} ${file_library_dynamic} ${file_library_object} ${file_library_static}
 
+install: ${file_library_dylib}
+	mkdir -p "${directory_install}"
+	dd if="${file_library_dylib_major}" of="${file_install_major}"
+	ln -s "${file_install_major}" "${file_install}"
+
 run: ${file_output}
 	cd ${directory_output} && ./${shell basename ${file_output}}
 
 ${file_library_dylib}: ${files_objects_library}
 	mkdir -p ${directory_library}
-	${cc} -dynamiclib -install_name ${name_library_dylib_major} -current_version ${version} -compatibility_version ${version_major_minor} ${files_dylibs} ${files_objects_library} -o ${file_library_dylib_major}
+	${cc} -dynamiclib ${c_flags_platform} -install_name ${name_library_dylib_major} -current_version ${version} -compatibility_version ${version_major_minor} ${files_dylibs} ${files_objects_library} -o ${file_library_dylib_major}
 ifneq (${debug}, 1)
 	${strip} ${strip_flags} ${file_library_dylib_major}
 endif
@@ -102,7 +160,7 @@ endif
 
 ${file_library_dynamic}: ${files_objects_library}
 	mkdir -p ${directory_library}
-	${cc} -shared -install_name ${name_library_dynamic_major} -current_version ${version} -compatibility_version ${version_major_minor} ${files_dylibs} ${files_objects_library} -o ${file_library_dynamic_major}
+	${cc} -shared ${c_flags_platform} -install_name ${name_library_dynamic_major} -current_version ${version} -compatibility_version ${version_major_minor} ${files_dylibs} ${files_objects_library} -o ${file_library_dynamic_major}
 ifneq (${debug}, 1)
 	${strip} ${strip_flags} ${file_library_dynamic_major}
 endif
@@ -120,11 +178,13 @@ ${file_library_static}: ${files_objects_library}
 	mkdir -p ${directory_library}
 	${ar} ${ar_flags} ${file_library_static} ${files_objects_library}
 
-${file_output}: ${files_objects_library} ${files_objects_executable}	
+${file_output}: ${files_objects_library} ${files_objects_executable}
+ifneq (${target_os},ios)
 	mkdir -p ${directory_output}
 	${cc} ${c_flags} ${files_dylibs} ${files_objects_library} ${files_objects_executable} ${file_clic3_library} -o ${file_output}
 	-rm ${directory_output}/${shell basename ${file_clic3_library}}
 	ln -s ${file_clic3_library} ${directory_output}/${shell basename ${file_clic3_library}}
+endif
 
 ${directory_objects_executable}/%.o: ${directory_sources_executable}/%.c	
 	mkdir -p ${directory_objects_executable}
@@ -134,16 +194,17 @@ ${directory_objects}/%.o: ${directory_sources}/%.c
 	mkdir -p ${directory_objects}
 	${cc} ${c_flags} -c $< -o $@
 
-clean: clean_library clean_library_debug clean_objects clean_output
+${directory_objects}/%_${target_os}.o: ${directory_sources}/%.c
+	mkdir -p ${directory_objects}
+	${cc} ${c_flags} -c $< -o $@
+
+clean: clean_library clean_objects clean_output
 
 clean_objects:
-	-rm -r ${directory_objects} 2> /dev/null
+	-rm -r ${directory_objects_base} 2> /dev/null
+
+clean_library:
+	-rm -r ${directory_library_base} 2> /dev/null
 
 clean_output:
 	-rm -r ${directory_output} 2> /dev/null
-
-clean_library:
-	-rm -r ${directory_library} 2> /dev/null
-
-clean_library_debug:
-	-rm -r ${directory_library_debug} 2> /dev/null
