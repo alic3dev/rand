@@ -217,6 +217,10 @@ unsigned char rand_source_rand_secure(
   struct rand_result* rand_result,
   rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
 ) {
+  struct rand_source_secure_data* rand_source_secure_data = (
+    rand_source->data
+  );
+
   unsigned char length_preliminary_rand_calls = (
     rand() % 256
   );
@@ -251,7 +255,9 @@ unsigned char rand_source_rand_secure(
       rand_source_index = (
         rand_source_index == 0
         ? rand() % 8
-        : fgetc(rand_source->data) % 8
+        : fgetc(
+          rand_source_secure_data->urandom
+        ) % 8
       );
 
       if (
@@ -262,7 +268,7 @@ unsigned char rand_source_rand_secure(
         ) % RAND_MAX;
       } else {
         unsigned int length_characters = fgetc(
-          rand_source->data
+          rand_source_secure_data->urandom
         );
 
         for (
@@ -273,7 +279,7 @@ unsigned char rand_source_rand_secure(
           random_value = (
             random_value + (
               fgetc(
-                rand_source->data
+                rand_source_secure_data->urandom
               )
             ) % RAND_MAX
           );
