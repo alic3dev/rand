@@ -44,7 +44,7 @@ void rand_parameters_parse(
   rand_parameters_parsing_state.mode_set = 0;
 
   for (
-    int index_parameter = 1; 
+    int index_parameter = 1;
     index_parameter < parameters_length;
     ++index_parameter
   ) {
@@ -99,6 +99,29 @@ void rand_parameters_parse(
         rand_parameters->type_source == rand_source_type_default
       ) {
         rand_parameters->type_source = rand_source_type_secure;
+      } else {
+        fprintf(
+          stderr,
+          "tried_to_set_source_more_than_once\n"
+        );
+
+        rand_parameters->error = 1;
+      }
+    }  else if (
+      clic3_char_arrays_within(
+        parameters[
+          index_parameter
+        ],
+        3,
+        "-c",
+        "--divisive_secure",
+        "divisive_secure"
+      ) != -1
+    ) {
+      if (
+        rand_parameters->type_source == rand_source_type_default
+      ) {
+        rand_parameters->type_source = rand_source_type_divisive_secure;
       } else {
         fprintf(
           stderr,
@@ -205,7 +228,7 @@ void rand_parameters_parse(
             index_parameter
           ][
             parameter_character_index
-          ] < '0' || 
+          ] < '0' ||
           parameters[
             index_parameter
           ][
