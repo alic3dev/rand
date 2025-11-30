@@ -16,6 +16,7 @@ usage: rand [?parameters] [?mode] [?#length]
     -h, --help, help                                  | print help information
     -p, --divisive, divisive                          | divisive random generation
     -s, --secure, secure                              | secure random generation
+    -c, --divisive_secure, divisive_secure            | secure divisive random generation
 ```
 
 ## development
