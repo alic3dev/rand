@@ -91,7 +91,7 @@ endif
 ifneq (${target_os},macos)
 files_objects_library:=${patsubst ${directory_objects}/%.o,${directory_objects}/%_${target_os}.o,${files_objects_library}}
 
-target_platform=arm64-apple-ios${target_iphoneos_version}
+target_platform=arm64-apple-ios${target_device_version}
 
 directory_sdk=${shell xcrun --sdk iphoneos${target_device_version} --show-sdk-path}
 endif
