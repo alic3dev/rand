@@ -2,9 +2,13 @@
 
 #include <rand_parameters.h>
 #include <rand_result.h>
+#include <rand_source_divisive_data.h>
+#include <rand_source_divisive_secure_data.h>
+#include <rand_source_secure_data.h>
 
 #include <stdlib.h>
 #include <sys/time.h>
+#include <timingsafe.h>
 
 void rand_source_initialize(
   struct rand_source* rand_source,
@@ -15,44 +19,58 @@ void rand_source_initialize(
   );
 
   rand_source->type_source = rand_source_parameters->type_source;
+  rand_source->data = (void*)0;
 
   switch (rand_source->type_source) {
+    case rand_source_type_divisive_secure:
+      rand_source->rand = rand_source_divisive_secure;
+      rand_source->data = malloc(
+        sizeof(struct rand_source_divisive_secure_data)
+      );
+
+      struct rand_source_divisive_secure_data* rand_source_divisive_secure_data = (
+        rand_source->data
+      );
+
+      rand_source_divisive_secure_data->timingsafe_token = (
+        timingsafe_enable_if_supported()
+      );
+
+      rand_source_divisive_data_initialize(
+        &rand_source_divisive_secure_data->rand_source_divisive_data
+      );
+
+      break;
     case rand_source_type_divisive:
       rand_source->rand = rand_source_divisive;
       rand_source->data = malloc(
         sizeof(struct rand_source_divisive_data)
       );
 
-      void* urandom = fopen(
-        "/dev/urandom",
-        "rb"
+      rand_source_divisive_data_initialize(
+        rand_source->data
       );
-
-      struct rand_source_divisive_data* rand_source_divisive_data = (
-        (struct rand_source_divisive_data*) rand_source->data
-      );
-
-      rand_source_divisive_data->multiplier = (
-        ((fgetc(urandom) + fgetc(urandom)) % 0xfffd) +
-        ((float) (fgetc(urandom) + fgetc(urandom)) / 100000.0f)
-      ) + 2.0f;
-
-      rand_source_divisive_data->seed = (
-        (fgetc(urandom) * fgetc(urandom)) % 0xfffd
-      ) + 2.0f;
-
-      rand_source_divisive_data->value = (
-        rand_source_divisive_data->seed
-      );
-
-      fclose(urandom);
+      
       break;
     case rand_source_type_secure:
       rand_source->rand = rand_source_rand_secure;
-      rand_source->data = fopen(
+      rand_source->data = malloc(
+        sizeof(struct rand_source_secure_data)
+      );
+
+      struct rand_source_secure_data* rand_source_secure_data = (
+        rand_source->data
+      );
+
+      rand_source_secure_data->timingsafe_token = (
+        timingsafe_enable_if_supported()
+      );
+
+      rand_source_secure_data->urandom = fopen(
         "/dev/urandom",
         "rb"
       );
+
       break;
     case rand_source_type_default:
     default:
@@ -71,10 +89,30 @@ void rand_source_seed_by_time(
     &time,
     (void*)0
   );
-  
+
   srand(
     time.tv_sec * 1000000 +
     time.tv_usec
+  );
+}
+
+unsigned char rand_source_divisive_secure(
+  struct rand_source* rand_source,
+  struct rand_result* rand_result,
+  rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
+) {
+  struct rand_source_divisive_secure_data* rand_source_divisive_secure_data = (
+    rand_source->data
+  );
+
+  struct rand_source_divisive_data* rand_source_divisive_data = (
+    &rand_source_divisive_secure_data->rand_source_divisive_data
+  );
+
+  return rand_source_divisive_from_data(
+    rand_source_divisive_data,
+    rand_result,
+    rand_source_get_bytes_transform_function
   );
 }
 
@@ -84,9 +122,21 @@ unsigned char rand_source_divisive(
   rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
 ) {
   struct rand_source_divisive_data* rand_source_divisive_data = (
-    (struct rand_source_divisive_data*) rand_source->data
+    rand_source->data
   );
 
+  return rand_source_divisive_from_data(
+    rand_source_divisive_data,
+    rand_result,
+    rand_source_get_bytes_transform_function
+  );
+}
+
+unsigned char rand_source_divisive_from_data(
+  struct rand_source_divisive_data* rand_source_divisive_data,
+  struct rand_result* rand_result,
+  rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
+) {
   for (
     unsigned long int index_byte = 0;
     index_byte < rand_result->length;
@@ -203,7 +253,7 @@ unsigned char rand_source_rand_secure(
         ? rand() % 8
         : fgetc(rand_source->data) % 8
       );
-      
+
       if (
         rand_source_index == 0
       ) {
@@ -256,11 +306,52 @@ unsigned char rand_source_get_bytes(
 void rand_source_clean(
   struct rand_source* rand_source
 ) {
-  if (
-    rand_source->type_source == rand_source_type_secure
+  switch (
+    rand_source->type_source
   ) {
-    fclose(
-      rand_source->data
-    );
+    case rand_source_type_divisive: {
+      free(
+        rand_source->data
+      );
+
+      break;
+    }
+    case rand_source_type_divisive_secure: {
+      struct rand_source_divisive_secure_data* rand_source_divisive_secure_data = (
+        rand_source->data
+      );
+
+      timingsafe_restore_if_supported(
+        rand_source_divisive_secure_data->timingsafe_token
+      );
+
+      free(
+        rand_source->data
+      );
+
+      break;
+    }
+    case rand_source_type_secure: {
+      struct rand_source_secure_data* rand_source_secure_data = (
+        rand_source->data
+      );
+
+      timingsafe_restore_if_supported(
+        rand_source_secure_data->timingsafe_token
+      );
+
+      fclose(
+        rand_source_secure_data->urandom
+      );
+
+      free(
+        rand_source->data
+      );
+
+      break;
+    }
+    default: {
+      break;
+    }
   }
 }
