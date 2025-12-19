@@ -23,5 +23,6 @@ void rand_print_usage(unsigned char to_std_err) {
     "    -v, --divisive, divisive                          | divisive random generation\n"
     "    -s, --secure, secure                              | secure random generation\n"
     "    -c, --divisive_secure, divisive_secure            | secure divisive random generation\n"
+    "    -z, --zac                                         | zac random generation\n"
   );
 }

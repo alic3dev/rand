@@ -68,6 +68,12 @@ unsigned char rand_source_rand_secure(
   rand_source_get_bytes_transform_function
 );
 
+unsigned char rand_source_zac(
+  struct rand_source*,
+  struct rand_result*,
+  rand_source_get_bytes_transform_function
+);
+
 unsigned char rand_source_get_bytes(
   struct rand_source*,
   struct rand_result*,
