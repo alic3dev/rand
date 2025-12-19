@@ -136,6 +136,29 @@ void rand_parameters_parse(
           index_parameter
         ],
         3,
+        "-z",
+        "--zac",
+        "zac"
+      ) != -1
+    ) {
+      if (
+        rand_parameters->type_source == rand_source_type_default
+      ) {
+        rand_parameters->type_source = rand_source_type_zac;
+      } else {
+        fprintf(
+          stderr,
+          "tried_to_set_source_more_than_once\n"
+        );
+
+        rand_parameters->error = 1;
+      }
+    } else if (
+      clic3_char_arrays_within(
+        parameters[
+          index_parameter
+        ],
+        3,
         "-b",
         "--bytes",
         "bytes"
