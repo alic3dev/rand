@@ -19,10 +19,17 @@ void rand_source_initialize(
     rand_source
   );
 
-  rand_source->type_source = rand_source_parameters->type_source;
-  rand_source->data = (void*)0;
+  rand_source->type_source = (
+    rand_source_parameters->type_source
+  );
 
-  switch (rand_source->type_source) {
+  rand_source->data = (
+    (void*) 0
+  );
+
+  switch (
+    rand_source->type_source
+  ) {
     case rand_source_type_divisive_secure:
       rand_source->rand = rand_source_divisive_secure;
       rand_source->data = malloc(
@@ -155,14 +162,31 @@ unsigned char rand_source_divisive_from_data(
   ) {
     do {
       rand_source_divisive_data->value = (
-        rand_source_divisive_data->value / 2.0f
+        (
+          rand_source_divisive_data->value /
+          2.0f
+        ) + (
+          rand_source_divisive_data->value / (
+            (
+              (
+                index_byte %
+                100
+              ) +
+              1
+            ) *
+            100.0f
+          )
+        )
       );
     } while (
       rand_source_divisive_data->value > 1.0f
     );
 
     float value = (
-      (rand_source_divisive_data->value - 0.5f) /
+      (
+        rand_source_divisive_data->value -
+        0.5f
+      ) /
       0.5f
     );
 
@@ -192,11 +216,13 @@ unsigned char rand_source_divisive_from_data(
     rand_result->bytes[
       index_byte
     ] = rand_source_get_bytes_transform_function(
-      value * 256
+      value *
+      256
     );
 
     rand_source_divisive_data->value = (
-      rand_source_divisive_data->value * rand_source_divisive_data->multiplier
+      rand_source_divisive_data->value *
+      rand_source_divisive_data->multiplier
     );
   }
 
@@ -216,7 +242,8 @@ unsigned char rand_source_rand(
     rand_result->bytes[
       index_byte
     ] = rand_source_get_bytes_transform_function(
-      rand() % 256
+      rand() %
+      256
     );
   }
 
@@ -377,6 +404,10 @@ void rand_source_clean(
     rand_source->type_source
   ) {
     case rand_source_type_divisive: {
+      rand_source_divisive_data_clean(
+        rand_source->data
+      );
+
       free(
         rand_source->data
       );
@@ -384,12 +415,8 @@ void rand_source_clean(
       break;
     }
     case rand_source_type_divisive_secure: {
-      struct rand_source_divisive_secure_data* rand_source_divisive_secure_data = (
+      rand_source_divisive_secure_data_clean(
         rand_source->data
-      );
-
-      timingsafe_restore_if_supported(
-        rand_source_divisive_secure_data->timingsafe_token
       );
 
       free(
