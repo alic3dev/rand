@@ -11,4 +11,8 @@ struct rand_source_divisive_secure_data {
   timingsafe_token_t timingsafe_token;
 };
 
+void rand_source_divisive_secure_data_clean(
+  struct rand_source_divisive_secure_data*
+);
+
 #endif
