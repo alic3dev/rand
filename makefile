@@ -96,7 +96,7 @@ target_platform=arm64-apple-ios${target_device_version}
 directory_sdk=${shell xcrun --sdk iphoneos${target_device_version} --show-sdk-path}
 endif
 
-cc=gcc
+cc=clang
 c_flags_platform=-target ${target_platform} -isysroot ${directory_sdk}
 c_flags=-I${directory_include} -I${directory_clic3_include} ${c_flags_platform}
 
@@ -130,17 +130,21 @@ file_library_dynamic_major=${directory_library}/${name_library_dynamic_major}
 
 file_library_static=${directory_library}/${name}.a
 
+ifeq (${target_os},macos)
 all: library ${name}
+${name}: ${file_output}
+else
+all: library
+endif
 
 ${name}_dylib: ${file_library_dylib}
 ${name}_dynamic: ${file_library_dynamic}
 ${name}_object: ${file_library_object}
 ${name}_static: ${file_library_static}
 
-${name}: ${file_output}
-
 library: ${file_library_dylib} ${file_library_dynamic} ${file_library_object} ${file_library_static}
 
+ifeq (${target_os},macos)
 install: ${file_library_dylib}
 	mkdir -p "${directory_install}"
 	dd if="${file_library_dylib_major}" of="${file_install_major}"
@@ -148,6 +152,7 @@ install: ${file_library_dylib}
 
 run: ${file_output}
 	cd ${directory_output} && ./${shell basename ${file_output}}
+endif
 
 ${file_library_dylib}: ${files_objects_library}
 	mkdir -p ${directory_library}
@@ -178,17 +183,17 @@ ${file_library_static}: ${files_objects_library}
 	mkdir -p ${directory_library}
 	${ar} ${ar_flags} ${file_library_static} ${files_objects_library}
 
+ifeq (${target_os},macos)
 ${file_output}: ${files_objects_library} ${files_objects_executable}
-ifneq (${target_os},ios)
 	mkdir -p ${directory_output}
 	${cc} ${c_flags} ${files_dylibs} ${files_objects_library} ${files_objects_executable} ${file_clic3_library} -o ${file_output}
 	-rm ${directory_output}/${shell basename ${file_clic3_library}}
 	ln -s ${file_clic3_library} ${directory_output}/${shell basename ${file_clic3_library}}
-endif
 
 ${directory_objects_executable}/%.o: ${directory_sources_executable}/%.c	
 	mkdir -p ${directory_objects_executable}
 	${cc} ${c_flags} -c $< -o $@
+endif
 
 ${directory_objects}/%.o: ${directory_sources}/%.c
 	mkdir -p ${directory_objects}
