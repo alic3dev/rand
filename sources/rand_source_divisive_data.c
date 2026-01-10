@@ -67,6 +67,190 @@ void rand_source_divisive_data_seed_generate(
   );
 }
 
+void rand_source_divisive_data_reseed(
+  struct rand_source_divisive_data* rand_source_divisive_data
+) {
+  rand_source_divisive_data_seed_generate(
+    rand_source_divisive_data->seed,
+    rand_source_divisive_data->length_seed
+  );
+
+  rand_source_divisive_data_initialize_multiplier_value(
+    rand_source_divisive_data
+  );
+}
+
+void rand_source_divisive_data_reseed_additive(
+  struct rand_source_divisive_data* rand_source_divisive_data
+) {
+  void* urandom = (
+    fopen(
+      "/dev/urandom",
+      "rb"
+    )
+  );
+
+  for (
+    unsigned short int index_byte_seed = 0;
+    index_byte_seed < rand_source_divisive_data->length_seed;
+    ++index_byte_seed
+  ) {
+    rand_source_divisive_data->seed[
+      index_byte_seed
+    ] = (
+      rand_source_divisive_data->seed[
+        index_byte_seed
+      ] +
+      fgetc(
+        urandom
+      )
+    );
+  }
+
+  fclose(
+    urandom
+  );
+
+  rand_source_divisive_data_initialize_multiplier_value(
+    rand_source_divisive_data
+  );
+}
+
+void rand_source_divisive_data_reseed_with_seed(
+  struct rand_source_divisive_data* rand_source_divisive_data,
+  unsigned char* seed,
+  unsigned short int length_seed
+) {
+  if (
+    rand_source_divisive_data->length_seed > length_seed
+  ) {
+    rand_source_divisive_data->seed = (
+      realloc(
+        rand_source_divisive_data->seed,
+        sizeof(
+          unsigned char
+        ) *
+        length_seed
+      )
+    );
+  } else if (
+    rand_source_divisive_data->length_seed < length_seed
+  ) {
+    rand_source_divisive_data->seed = (
+      realloc(
+        rand_source_divisive_data->seed,
+        sizeof(
+          unsigned char
+        ) *
+        length_seed
+      )
+    );
+
+    for (
+      unsigned short int index_byte_seed = rand_source_divisive_data->length_seed;
+      index_byte_seed < length_seed;
+      ++index_byte_seed
+    ) {
+      rand_source_divisive_data->seed[
+        index_byte_seed
+      ] = (
+        0x00
+      );
+    }
+  }
+
+  rand_source_divisive_data->length_seed = (
+    length_seed
+  );
+
+  for (
+    unsigned short int index_byte_seed = 0;
+    index_byte_seed < rand_source_divisive_data->length_seed;
+    ++index_byte_seed
+  ) {
+    rand_source_divisive_data->seed[
+      index_byte_seed
+    ] = (
+      seed[
+        index_byte_seed
+      ]
+    );
+  }
+
+  rand_source_divisive_data_initialize_multiplier_value(
+    rand_source_divisive_data
+  );
+}
+
+void rand_source_divisive_data_reseed_with_seed_additive(
+  struct rand_source_divisive_data* rand_source_divisive_data,
+  unsigned char* seed,
+  unsigned short int length_seed
+) {
+  if (
+    rand_source_divisive_data->length_seed > length_seed
+  ) {
+    rand_source_divisive_data->seed = (
+      realloc(
+        rand_source_divisive_data->seed,
+        sizeof(
+          unsigned char
+        ) *
+        length_seed
+      )
+    );
+  } else if (
+    rand_source_divisive_data->length_seed < length_seed
+  ) {
+    rand_source_divisive_data->seed = (
+      realloc(
+        rand_source_divisive_data->seed,
+        sizeof(
+          unsigned char
+        ) *
+        length_seed
+      )
+    );
+
+    for (
+      unsigned short int index_byte_seed = rand_source_divisive_data->length_seed;
+      index_byte_seed < length_seed;
+      ++index_byte_seed
+    ) {
+      rand_source_divisive_data->seed[
+        index_byte_seed
+      ] = (
+        0x00
+      );
+    }
+  }
+
+  rand_source_divisive_data->length_seed = (
+    length_seed
+  );
+
+  for (
+    unsigned short int index_byte_seed = 0;
+    index_byte_seed < rand_source_divisive_data->length_seed;
+    ++index_byte_seed
+  ) {
+    rand_source_divisive_data->seed[
+      index_byte_seed
+    ] = (
+      rand_source_divisive_data->seed[
+        index_byte_seed
+      ] +
+      seed[
+        index_byte_seed
+      ]
+    );
+  }
+
+  rand_source_divisive_data_initialize_multiplier_value(
+    rand_source_divisive_data
+  );
+}
+
 void rand_source_divisive_data_initialize_seeded(
   struct rand_source_divisive_data* rand_source_divisive_data,
   unsigned char* rand_source_divisive_data_seed,
@@ -113,6 +297,14 @@ void rand_source_divisive_data_initialize_preseeded(
     2.0f
   );
 
+  rand_source_divisive_data_initialize_multiplier_value(
+    rand_source_divisive_data
+  );
+}
+
+void rand_source_divisive_data_initialize_multiplier_value(
+  struct rand_source_divisive_data* rand_source_divisive_data
+) {
   for (
     unsigned short int index_byte_seed = 0;
     index_byte_seed < rand_source_divisive_data->length_seed;
