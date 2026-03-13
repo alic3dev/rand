@@ -90,52 +90,6 @@ void rand_parameters_parse(
           index_parameter
         ],
         3,
-        "-s",
-        "--secure",
-        "secure"
-      ) != -1
-    ) {
-      if (
-        rand_parameters->type_source == rand_source_type_default
-      ) {
-        rand_parameters->type_source = rand_source_type_secure;
-      } else {
-        fprintf(
-          stderr,
-          "tried_to_set_source_more_than_once\n"
-        );
-
-        rand_parameters->error = 1;
-      }
-    }  else if (
-      clic3_char_arrays_within(
-        parameters[
-          index_parameter
-        ],
-        3,
-        "-c",
-        "--divisive_secure",
-        "divisive_secure"
-      ) != -1
-    ) {
-      if (
-        rand_parameters->type_source == rand_source_type_default
-      ) {
-        rand_parameters->type_source = rand_source_type_divisive_secure;
-      } else {
-        fprintf(
-          stderr,
-          "tried_to_set_source_more_than_once\n"
-        );
-
-        rand_parameters->error = 1;
-      }
-    } else if (
-      clic3_char_arrays_within(
-        parameters[
-          index_parameter
-        ],
-        3,
         "-z",
         "--zac",
         "zac"

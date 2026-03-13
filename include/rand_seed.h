@@ -3,7 +3,7 @@
 
 void rand_seed_generate(
   unsigned char*,
-  unsigned int
+  unsigned long long int
 );
 
 #endif

@@ -2,13 +2,14 @@
 
 #include <clic3_bytes.h>
 
+#include <sys/sysctl.h>
 #include <sys/time.h>
 
 #include <stdio.h>
 
 void rand_seed_generate(
   unsigned char* rand_seed_buffer,
-  unsigned int length_rand_seed_buffer
+  unsigned long long int length_rand_seed_buffer
 ) {
   struct timeval timeval;
 
@@ -38,7 +39,7 @@ void rand_seed_generate(
   );
 
   for (
-    unsigned int index_rand_seed = (
+    unsigned long long int index_rand_seed = (
       0x00
     );
     (
@@ -50,15 +51,32 @@ void rand_seed_generate(
     rand_seed_buffer[
       index_rand_seed
     ] = (
-      (
-        index_rand_seed *
-        length_rand_seed_buffer
-      ) +
+      index_rand_seed *
+      length_rand_seed_buffer
+    );
+
+    rand_seed_buffer[
+      index_rand_seed
+    ] = (
+      (unsigned long long int)
+      rand_seed_buffer[
+        index_rand_seed
+      ] +
       (
         length_rand_seed_buffer /
         index_rand_seed
-      ) +
+      )
+    );
+
+    rand_seed_buffer[
+      index_rand_seed
+    ] = (
+      (unsigned long long int)
+      rand_seed_buffer[
+        index_rand_seed
+      ] +
       (
+        (unsigned long long int)
         bytes_time_val_usec[
           index_rand_seed %
           0x03
@@ -81,22 +99,70 @@ void rand_seed_generate(
             index_rand_seed
           )
         )
-      ) +
+      )
+    );
+
+    rand_seed_buffer[
+      index_rand_seed
+    ] = (
+      (unsigned long long int)
+      rand_seed_buffer[
+        index_rand_seed
+      ] +
       (
+        (unsigned long long int)
         bytes_time_val_sec[
           0x00
         ] *
+        (
+          index_rand_seed %
+          (
+            bytes_time_val_usec[
+              0x00
+            ] *
+            13
+          )
+        )
+      )
+    );
+    
+    rand_seed_buffer[
+      index_rand_seed
+    ] = (
+      (unsigned long long int)
+      rand_seed_buffer[
         index_rand_seed
-      ) +
+      ] +
       (
+        (unsigned long long int)
         bytes_time_val_sec[
           0x01
         ] *
         length_rand_seed_buffer
-      ) +
+      )
+    );
+
+    rand_seed_buffer[
+      index_rand_seed
+    ] = (
+      (unsigned long long int)
+      rand_seed_buffer[
+        index_rand_seed
+      ] +
+      (unsigned long long int)
       bytes_time_val_sec[
         0x02
+      ]
+    );
+
+    rand_seed_buffer[
+      index_rand_seed
+    ] = (
+      (unsigned long long int)
+      rand_seed_buffer[
+        index_rand_seed
       ] +
+      (unsigned long long int)
       bytes_time_val_sec[
         0x03
       ]
