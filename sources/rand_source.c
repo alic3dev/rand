@@ -7,6 +7,8 @@
 #include <rand_source_secure_data.h>
 #include <rand_source_zac_data.h>
 
+#include <clic3_memory.h>
+
 #include <stdlib.h>
 #include <sys/time.h>
 #include <timingsafe.h>
@@ -32,8 +34,12 @@ void rand_source_initialize(
   ) {
     case rand_source_type_divisive_secure:
       rand_source->rand = rand_source_divisive_secure;
-      rand_source->data = malloc(
-        sizeof(struct rand_source_divisive_secure_data)
+      rand_source->data = (
+        clic3_memory_allocate_raw(
+          sizeof(
+            struct rand_source_divisive_secure_data
+          )
+        )
       );
 
       struct rand_source_divisive_secure_data* rand_source_divisive_secure_data = (
@@ -51,19 +57,27 @@ void rand_source_initialize(
       break;
     case rand_source_type_divisive:
       rand_source->rand = rand_source_divisive;
-      rand_source->data = malloc(
-        sizeof(struct rand_source_divisive_data)
+      rand_source->data = (
+        clic3_memory_allocate_raw(
+          sizeof(
+            struct rand_source_divisive_data
+          )
+        )
       );
 
       rand_source_divisive_data_initialize(
         rand_source->data
       );
-      
+
       break;
     case rand_source_type_secure:
       rand_source->rand = rand_source_rand_secure;
-      rand_source->data = malloc(
-        sizeof(struct rand_source_secure_data)
+      rand_source->data = (
+        clic3_memory_allocate_raw(
+          sizeof(
+            struct rand_source_secure_data
+          )
+        )
       );
 
       struct rand_source_secure_data* rand_source_secure_data = (
@@ -74,16 +88,22 @@ void rand_source_initialize(
         timingsafe_enable_if_supported()
       );
 
-      rand_source_secure_data->urandom = fopen(
-        "/dev/urandom",
-        "rb"
+      rand_source_secure_data->urandom = (
+        fopen(
+          "/dev/urandom",
+          "rb"
+        )
       );
 
       break;
     case rand_source_type_zac:
       rand_source->rand = rand_source_zac;
-      rand_source->data = malloc(
-        sizeof(struct rand_source_zac_data)
+      rand_source->data = (
+        clic3_memory_allocate_raw(
+          sizeof(
+            struct rand_source_zac_data
+          )
+        )
       );
 
       rand_source_zac_data_initialize(
@@ -92,8 +112,14 @@ void rand_source_initialize(
       break;
     case rand_source_type_default:
     default:
-      rand_source->rand = rand_source_rand;
-      rand_source->data = (void*)0;
+      rand_source->rand = (
+        rand_source_rand
+      );
+
+      rand_source->data = (
+        0
+      );
+
       break;
   }
 }
@@ -109,7 +135,8 @@ void rand_source_seed_by_time(
   );
 
   srand(
-    time.tv_sec * 1000000 +
+    time.tv_sec *
+    1000000 +
     time.tv_usec
   );
 }
@@ -408,7 +435,7 @@ void rand_source_clean(
         rand_source->data
       );
 
-      free(
+      clic3_memory_free_raw(
         rand_source->data
       );
 
@@ -419,7 +446,7 @@ void rand_source_clean(
         rand_source->data
       );
 
-      free(
+      clic3_memory_free_raw(
         rand_source->data
       );
 
@@ -438,7 +465,7 @@ void rand_source_clean(
         rand_source_secure_data->urandom
       );
 
-      free(
+      clic3_memory_free_raw(
         rand_source->data
       );
 

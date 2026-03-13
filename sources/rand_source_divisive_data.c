@@ -1,9 +1,11 @@
 #include <rand_source_divisive_data.h>
 
+#include <rand_seed.h>
 #include <rand_source_divisive_secure_data.h>
 
+#include <clic3_memory.h>
+
 #include <stdio.h>
-#include <stdlib.h>
 
 void rand_source_divisive_data_initialize(
   struct rand_source_divisive_data* rand_source_divisive_data
@@ -22,11 +24,10 @@ void rand_source_divisive_data_initialize_with_seed_length(
     length_seed
   );
 
-  rand_source_divisive_data->seed = malloc(
-    sizeof(
-      unsigned char
-    ) *
-    rand_source_divisive_data->length_seed
+  rand_source_divisive_data->seed = (
+    clic3_memory_allocate_raw(
+      rand_source_divisive_data->length_seed
+    )
   );
 
   rand_source_divisive_data_seed_generate(
@@ -43,27 +44,9 @@ void rand_source_divisive_data_seed_generate(
   unsigned char* seed,
   unsigned short int length_seed
 ) {
-  void* urandom = fopen(
-    "/dev/urandom",
-    "rb"
-  );
-
-  for (
-    unsigned short int index_byte_seed = 0;
-    index_byte_seed < length_seed;
-    ++index_byte_seed
-  ) {
-    seed[
-      index_byte_seed
-    ] = (
-      fgetc(
-        urandom
-      )
-    );
-  }
-
-  fclose(
-    urandom
+  rand_seed_generate(
+    seed,
+    length_seed
   );
 }
 
@@ -83,32 +66,9 @@ void rand_source_divisive_data_reseed(
 void rand_source_divisive_data_reseed_additive(
   struct rand_source_divisive_data* rand_source_divisive_data
 ) {
-  void* urandom = (
-    fopen(
-      "/dev/urandom",
-      "rb"
-    )
-  );
-
-  for (
-    unsigned short int index_byte_seed = 0;
-    index_byte_seed < rand_source_divisive_data->length_seed;
-    ++index_byte_seed
-  ) {
-    rand_source_divisive_data->seed[
-      index_byte_seed
-    ] = (
-      rand_source_divisive_data->seed[
-        index_byte_seed
-      ] +
-      fgetc(
-        urandom
-      )
-    );
-  }
-
-  fclose(
-    urandom
+  rand_seed_generate(
+    rand_source_divisive_data->seed,
+    rand_source_divisive_data->length_seed
   );
 
   rand_source_divisive_data_initialize_multiplier_value(
@@ -124,26 +84,16 @@ void rand_source_divisive_data_reseed_with_seed(
   if (
     rand_source_divisive_data->length_seed > length_seed
   ) {
-    rand_source_divisive_data->seed = (
-      realloc(
-        rand_source_divisive_data->seed,
-        sizeof(
-          unsigned char
-        ) *
-        length_seed
-      )
+    clic3_memory_reallocate_raw(
+      &rand_source_divisive_data->seed,
+      length_seed
     );
   } else if (
     rand_source_divisive_data->length_seed < length_seed
   ) {
-    rand_source_divisive_data->seed = (
-      realloc(
-        rand_source_divisive_data->seed,
-        sizeof(
-          unsigned char
-        ) *
-        length_seed
-      )
+    clic3_memory_reallocate_raw(
+      &rand_source_divisive_data->seed,
+      length_seed
     );
 
     for (
@@ -190,26 +140,16 @@ void rand_source_divisive_data_reseed_with_seed_additive(
   if (
     rand_source_divisive_data->length_seed > length_seed
   ) {
-    rand_source_divisive_data->seed = (
-      realloc(
-        rand_source_divisive_data->seed,
-        sizeof(
-          unsigned char
-        ) *
-        length_seed
-      )
+    clic3_memory_reallocate_raw(
+      &rand_source_divisive_data->seed,
+      length_seed
     );
   } else if (
     rand_source_divisive_data->length_seed < length_seed
   ) {
-    rand_source_divisive_data->seed = (
-      realloc(
-        rand_source_divisive_data->seed,
-        sizeof(
-          unsigned char
-        ) *
-        length_seed
-      )
+    clic3_memory_reallocate_raw(
+      &rand_source_divisive_data->seed,
+      length_seed
     );
 
     for (
@@ -260,11 +200,10 @@ void rand_source_divisive_data_initialize_seeded(
     rand_source_divisive_data_length_seed
   );
 
-  rand_source_divisive_data->seed = malloc(
-    sizeof(
-      unsigned char
-    ) *
-    rand_source_divisive_data->length_seed
+  rand_source_divisive_data->seed = (
+    clic3_memory_allocate_raw(
+      rand_source_divisive_data->length_seed
+    )
   );
 
   for (
@@ -346,7 +285,7 @@ void rand_source_divisive_data_initialize_multiplier_value(
         0xfffd
       ) {
         rand_source_divisive_data->multiplier = (
-          rand_source_divisive_data->multiplier - 
+          rand_source_divisive_data->multiplier -
           (unsigned int) (
             rand_source_divisive_data->multiplier /
             (float) 0xfffd
@@ -399,7 +338,7 @@ void rand_source_divisive_data_initialize_multiplier_value(
         0xfffd
       ) {
         rand_source_divisive_data->value = (
-          rand_source_divisive_data->value - 
+          rand_source_divisive_data->value -
           (unsigned int) (
             rand_source_divisive_data->value /
             (float) 0xfffd
@@ -425,7 +364,7 @@ void rand_source_divisive_data_initialize_multiplier_value(
 void rand_source_divisive_data_clean(
   struct rand_source_divisive_data* rand_source_divisive_data
 ) {
-  free(
+  clic3_memory_free_raw(
     rand_source_divisive_data->seed
   );
 }
