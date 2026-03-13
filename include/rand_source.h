@@ -38,12 +38,6 @@ void rand_source_seed_by_time(
   struct rand_source*
 );
 
-unsigned char rand_source_divisive_secure(
-  struct rand_source*,
-  struct rand_result*,
-  rand_source_get_bytes_transform_function
-);
-
 unsigned char rand_source_divisive(
   struct rand_source*,
   struct rand_result*,
@@ -57,12 +51,6 @@ unsigned char rand_source_divisive_from_data(
 );
 
 unsigned char rand_source_rand(
-  struct rand_source*,
-  struct rand_result*,
-  rand_source_get_bytes_transform_function
-);
-
-unsigned char rand_source_rand_secure(
   struct rand_source*,
   struct rand_result*,
   rand_source_get_bytes_transform_function

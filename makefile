@@ -79,7 +79,7 @@ files_objects_library=${patsubst ${directory_sources}/%.c, ${directory_objects}/
 files_dylibs=${file_clic3_library}
 
 ifndef target_device_version
-	target_device_version=26.1
+target_device_version=26.1
 endif
 
 ifeq (${target_os},macos)
@@ -101,7 +101,7 @@ c_flags_platform=-target ${target_platform} -isysroot ${directory_sdk}
 c_flags=-I${directory_include} -I${directory_clic3_include} ${c_flags_platform}
 
 ifeq (${debug}, 1)
-	c_flags:=${c_flags} -O0 -g -v -da
+	c_flags:=${c_flags} -O0 -g -v
 else
 	c_flags:=${c_flags} -O3
 endif
