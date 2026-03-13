@@ -2,9 +2,8 @@
 
 #include <rand_parameters.h>
 #include <rand_result.h>
+#include <rand_seed.h>
 #include <rand_source_divisive_data.h>
-#include <rand_source_divisive_secure_data.h>
-#include <rand_source_secure_data.h>
 #include <rand_source_zac_data.h>
 
 #include <clic3_memory.h>
@@ -32,31 +31,11 @@ void rand_source_initialize(
   switch (
     rand_source->type_source
   ) {
-    case rand_source_type_divisive_secure:
-      rand_source->rand = rand_source_divisive_secure;
-      rand_source->data = (
-        clic3_memory_allocate_raw(
-          sizeof(
-            struct rand_source_divisive_secure_data
-          )
-        )
+    case rand_source_type_divisive: {
+      rand_source->rand = (
+        rand_source_divisive
       );
 
-      struct rand_source_divisive_secure_data* rand_source_divisive_secure_data = (
-        rand_source->data
-      );
-
-      rand_source_divisive_secure_data->timingsafe_token = (
-        timingsafe_enable_if_supported()
-      );
-
-      rand_source_divisive_data_initialize(
-        &rand_source_divisive_secure_data->rand_source_divisive_data
-      );
-
-      break;
-    case rand_source_type_divisive:
-      rand_source->rand = rand_source_divisive;
       rand_source->data = (
         clic3_memory_allocate_raw(
           sizeof(
@@ -70,34 +49,12 @@ void rand_source_initialize(
       );
 
       break;
-    case rand_source_type_secure:
-      rand_source->rand = rand_source_rand_secure;
-      rand_source->data = (
-        clic3_memory_allocate_raw(
-          sizeof(
-            struct rand_source_secure_data
-          )
-        )
+    }
+    case rand_source_type_zac: {
+      rand_source->rand = (
+        rand_source_zac
       );
 
-      struct rand_source_secure_data* rand_source_secure_data = (
-        rand_source->data
-      );
-
-      rand_source_secure_data->timingsafe_token = (
-        timingsafe_enable_if_supported()
-      );
-
-      rand_source_secure_data->urandom = (
-        fopen(
-          "/dev/urandom",
-          "rb"
-        )
-      );
-
-      break;
-    case rand_source_type_zac:
-      rand_source->rand = rand_source_zac;
       rand_source->data = (
         clic3_memory_allocate_raw(
           sizeof(
@@ -109,9 +66,11 @@ void rand_source_initialize(
       rand_source_zac_data_initialize(
         rand_source->data
       );
+
       break;
+    }
     case rand_source_type_default:
-    default:
+    default: {
       rand_source->rand = (
         rand_source_rand
       );
@@ -121,6 +80,7 @@ void rand_source_initialize(
       );
 
       break;
+    }
   }
 }
 
@@ -131,33 +91,13 @@ void rand_source_seed_by_time(
 
   gettimeofday(
     &time,
-    (void*)0
+    0
   );
 
   srand(
     time.tv_sec *
     1000000 +
     time.tv_usec
-  );
-}
-
-unsigned char rand_source_divisive_secure(
-  struct rand_source* rand_source,
-  struct rand_result* rand_result,
-  rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
-) {
-  struct rand_source_divisive_secure_data* rand_source_divisive_secure_data = (
-    rand_source->data
-  );
-
-  struct rand_source_divisive_data* rand_source_divisive_data = (
-    &rand_source_divisive_secure_data->rand_source_divisive_data
-  );
-
-  return rand_source_divisive_from_data(
-    rand_source_divisive_data,
-    rand_result,
-    rand_source_get_bytes_transform_function
   );
 }
 
@@ -261,105 +201,35 @@ unsigned char rand_source_rand(
   struct rand_result* rand_result,
   rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
 ) {
+  rand_seed_generate(
+    rand_result->bytes,
+    rand_result->length
+  );
+
   for (
-    unsigned long int index_byte = 0;
-    index_byte < rand_result->length;
+    unsigned long int index_byte = (
+      0x00
+    );
+    (
+      index_byte <
+      rand_result->length
+    );
     ++index_byte
   ) {
     rand_result->bytes[
       index_byte
-    ] = rand_source_get_bytes_transform_function(
-      rand() %
-      256
+    ] = (
+      rand_source_get_bytes_transform_function(
+        rand_result->bytes[
+          index_byte
+        ]
+      )
     );
   }
 
-  return 0;
-}
-
-unsigned char rand_source_rand_secure(
-  struct rand_source* rand_source,
-  struct rand_result* rand_result,
-  rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
-) {
-  struct rand_source_secure_data* rand_source_secure_data = (
-    rand_source->data
+  return (
+    0x00
   );
-
-  unsigned char length_preliminary_rand_calls = (
-    rand() % 256
-  );
-
-  for (
-    unsigned char index_rand_calls = 0;
-    index_rand_calls < length_preliminary_rand_calls;
-    ++index_rand_calls
-  ) {
-    rand();
-  }
-
-  for (
-    unsigned long int index_byte = 0;
-    index_byte < rand_result->length;
-    ++index_byte
-  ) {
-    int random_value = rand();
-    int add_rand_calls = rand() % 100;
-
-    unsigned int rand_source_index = (
-      add_rand_calls % 8 == 0
-      ? 1
-      : 0
-    );
-
-    for (
-      int index_rand_calls = 0;
-      index_rand_calls < add_rand_calls;
-      ++index_rand_calls
-    ) {
-      rand_source_index = (
-        rand_source_index == 0
-        ? rand() % 8
-        : fgetc(
-          rand_source_secure_data->urandom
-        ) % 8
-      );
-
-      if (
-        rand_source_index == 0
-      ) {
-        random_value = (
-          random_value + rand()
-        ) % RAND_MAX;
-      } else {
-        unsigned int length_characters = fgetc(
-          rand_source_secure_data->urandom
-        );
-
-        for (
-          unsigned int index_character = 0;
-          index_character <= length_characters;
-          ++index_character
-        ) {
-          random_value = (
-            random_value + (
-              fgetc(
-                rand_source_secure_data->urandom
-              )
-            ) % RAND_MAX
-          );
-        }
-      }
-    }
-
-    rand_result->bytes[
-      index_byte
-    ] = rand_source_get_bytes_transform_function(
-      random_value % 256
-    );
-  }
-
-  return 0;
 }
 
 unsigned char rand_source_zac(
@@ -433,36 +303,6 @@ void rand_source_clean(
     case rand_source_type_divisive: {
       rand_source_divisive_data_clean(
         rand_source->data
-      );
-
-      clic3_memory_free_raw(
-        rand_source->data
-      );
-
-      break;
-    }
-    case rand_source_type_divisive_secure: {
-      rand_source_divisive_secure_data_clean(
-        rand_source->data
-      );
-
-      clic3_memory_free_raw(
-        rand_source->data
-      );
-
-      break;
-    }
-    case rand_source_type_secure: {
-      struct rand_source_secure_data* rand_source_secure_data = (
-        rand_source->data
-      );
-
-      timingsafe_restore_if_supported(
-        rand_source_secure_data->timingsafe_token
-      );
-
-      fclose(
-        rand_source_secure_data->urandom
       );
 
       clic3_memory_free_raw(

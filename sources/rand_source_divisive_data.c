@@ -1,7 +1,6 @@
 #include <rand_source_divisive_data.h>
 
 #include <rand_seed.h>
-#include <rand_source_divisive_secure_data.h>
 
 #include <clic3_memory.h>
 
