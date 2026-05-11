@@ -4,7 +4,6 @@
 #include <rand_result.h>
 #include <rand_seed.h>
 #include <rand_source_divisive_data.h>
-#include <rand_source_zac_data.h>
 
 #include <clic3_memory.h>
 
@@ -25,7 +24,7 @@ void rand_source_initialize(
   );
 
   rand_source->data = (
-    (void*) 0
+    0x00
   );
 
   switch (
@@ -45,25 +44,6 @@ void rand_source_initialize(
       );
 
       rand_source_divisive_data_initialize(
-        rand_source->data
-      );
-
-      break;
-    }
-    case rand_source_type_zac: {
-      rand_source->rand = (
-        rand_source_zac
-      );
-
-      rand_source->data = (
-        clic3_memory_allocate_raw(
-          sizeof(
-            struct rand_source_zac_data
-          )
-        )
-      );
-
-      rand_source_zac_data_initialize(
         rand_source->data
       );
 
@@ -230,56 +210,6 @@ unsigned char rand_source_rand(
   return (
     0x00
   );
-}
-
-unsigned char rand_source_zac(
-  struct rand_source* rand_source,
-  struct rand_result* rand_result,
-  rand_source_get_bytes_transform_function rand_source_get_bytes_transform_function
-) {
-  struct rand_source_zac_data* rand_source_zac_data = (
-    rand_source->data
-  );
-
-  for (
-    unsigned long int index_byte = 0;
-    index_byte < rand_result->length;
-    ++index_byte
-  ) {
-    rand_result->bytes[
-      index_byte
-    ] = rand_source_get_bytes_transform_function(
-      -rand_source_zac_data->value
-    );
-
-    switch (
-      rand_source_zac_data->step
-    ) {
-      case 0: {
-        rand_source_zac_data->value += 2;
-        break;
-      }
-      case 1: {
-        rand_source_zac_data->value -= 6;
-        break;
-      }
-      case 2: {
-        rand_source_zac_data->value += 1;
-        break;
-      }
-      case 3: {
-        rand_source_zac_data->value -= 3;
-        break;
-      }
-    }
-
-    rand_source_zac_data->step = (
-      rand_source_zac_data->step +
-      1
-    ) % 4;
-  }
-
-  return 0;
 }
 
 unsigned char rand_source_get_bytes(

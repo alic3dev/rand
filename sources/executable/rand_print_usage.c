@@ -21,6 +21,5 @@ void rand_print_usage(unsigned char to_std_err) {
     "  parameters:\n"
     "    -h, --help, help                                  | print help information\n"
     "    -v, --divisive, divisive                          | divisive random generation\n"
-    "    -z, --zac                                         | zac random generation\n"
   );
 }
