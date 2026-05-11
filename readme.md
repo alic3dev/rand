@@ -14,7 +14,7 @@ usage: rand [?parameters] [?mode] [?#length]
     -a, --alphabetical, alphabetical                  | alphabetical
   parameters:
     -h, --help, help                                  | print help information
-    -p, --divisive, divisive                          | divisive random generation
+    -v, --divisive, divisive                          | divisive random generation
 ```
 
 ## development
